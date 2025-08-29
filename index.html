@@ -1,22 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pokémon Predictor</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teachable Machine - Image Model</title>
 </head>
 <body>
-  <h2>Pokémon Predictor</h2>
-  
-  <video id="camera" autoplay playsinline style="width: 300px;"></video>
-  <button id="captureBtn">Capture</button>
-  <br><br>
-  <canvas id="canvas" style="display:none;"></canvas>
-  <img id="capturedImage" style="width: 300px; display:none;" />
+    <h2>Teachable Machine Image Model</h2>
 
-  <h3 id="result"></h3>
+    <!-- Button to start the model -->
+    <button type="button" onclick="init()">Start Camera</button>
+    
+    <!-- Webcam feed and labels -->
+    <div id="webcam-container"></div>
+    <div id="label-container"></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-  <script src="script.js"></script>
+    <!-- TensorFlow and Teachable Machine Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+
+    <!-- Your script -->
+    <script src="script.js"></script>
 </body>
 </html>
