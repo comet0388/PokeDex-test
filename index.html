@@ -20,19 +20,22 @@
 <body>
     <h2>Pokédex Camera Test</h2>
 
-    <!-- Live webcam feed -->
+    <!-- Start camera -->
+    <button id="start-btn">Start Camera</button>
+
+    <!-- Webcam preview -->
     <div id="webcam-container"></div>
 
-    <!-- Button to capture -->
-    <button id="capture-btn">Capture Image</button>
+    <!-- Capture button -->
+    <button id="capture-btn" disabled>Capture Image</button>
 
     <!-- Captured image -->
     <div id="captured-container"></div>
 
-    <!-- Prediction result -->
+    <!-- Prediction -->
     <div id="result">Prediction will appear here</div>
 
-    <!-- TensorFlow.js and Teachable Machine libraries -->
+    <!-- TensorFlow.js and Teachable Machine -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
 
