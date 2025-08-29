@@ -1,51 +1,47 @@
-let model, webcamStream;
-const video = document.getElementById("camera");
-const captureBtn = document.getElementById("capture");
-const resultDiv = document.getElementById("result");
-const snapshotCanvas = document.createElement("canvas");
-const snapshotImg = document.createElement("img");
-document.body.appendChild(snapshotImg);
+let model;
+let video = document.getElementById("camera");
+let captureBtn = document.getElementById("capture");
+let resultDiv = document.getElementById("result");
+let snapshotImg = document.getElementById("snapshot");
+
+const URL = "./model/"; // Path to your model folder
 
 async function init() {
   try {
-    // Load your model
-    model = await tmImage.load("./model/model.json", "./model/metadata.json");
-    
-    // Try accessing the back camera
-    const constraints = {
-      video: {
-        facingMode: { ideal: "environment" }, // Prefer back camera
-        width: 320,
-        height: 240
-      },
-      audio: false
-    };
+    model = await tmImage.load(`${URL}model.json`, `${URL}metadata.json`);
+    console.log("Model loaded!");
 
-    webcamStream = await navigator.mediaDevices.getUserMedia(constraints);
-    video.srcObject = webcamStream;
-    video.play();
+    // Force back camera
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { exact: "environment" } },
+      audio: false
+    });
+
+    video.srcObject = stream;
   } catch (error) {
-    console.error("Error accessing camera:", error);
-    resultDiv.textContent = "Camera access failed. Check permissions.";
+    console.error("Camera access failed:", error);
+    resultDiv.innerText = "Camera access failed. Check permissions or try another browser.";
   }
 }
 
 captureBtn.addEventListener("click", async () => {
-  snapshotCanvas.width = video.videoWidth;
-  snapshotCanvas.height = video.videoHeight;
-  snapshotCanvas.getContext("2d").drawImage(video, 0, 0);
-  
-  // Show the captured frame
-  snapshotImg.src = snapshotCanvas.toDataURL("image/png");
-  snapshotImg.style.width = "300px";
-  snapshotImg.style.marginTop = "20px";
+  try {
+    let canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext("2d").drawImage(video, 0, 0);
 
-  // Predict
-  const prediction = await model.predict(snapshotCanvas);
-  const best = prediction.reduce((prev, current) =>
-    prev.probability > current.probability ? prev : current
-  );
-  resultDiv.textContent = `Predicted Pokémon: ${best.className} (${(best.probability * 100).toFixed(2)}%)`;
+    snapshotImg.src = canvas.toDataURL("image/png");
+    snapshotImg.style.display = "block";
+
+    const prediction = await model.predict(canvas);
+    let topPrediction = prediction.reduce((max, item) => item.probability > max.probability ? item : max);
+
+    resultDiv.innerText = `Prediction: ${topPrediction.className} (${(topPrediction.probability * 100).toFixed(2)}%)`;
+  } catch (error) {
+    console.error(error);
+    resultDiv.innerText = "Prediction failed.";
+  }
 });
 
 init();
