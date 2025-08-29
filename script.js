@@ -1,61 +1,65 @@
-let model, webcam, labelContainer, maxPredictions;
+let model;
+const video = document.getElementById('camera');
+const canvas = document.getElementById('canvas');
+const capturedImage = document.getElementById('capturedImage');
+const result = document.getElementById('result');
+const captureBtn = document.getElementById('captureBtn');
 
-// Initialize the model
-async function init() {
-    const modelURL = "/my_model/model.json";
-    const metadataURL = "/my_model/metadata.json";
-
-    try {
-        // Load the model and metadata
-        model = await tmImage.load(modelURL, metadataURL);
-        maxPredictions = model.getTotalClasses();
-
-        console.log("Model loaded successfully!");
-
-        // Set up webcam
-        const flip = true; // flip the camera if needed
-        webcam = new tmImage.Webcam(300, 300, flip);
-        await webcam.setup({ facingMode: "environment" }); // use back camera
-        await webcam.play();
-        window.requestAnimationFrame(loop);
-
-        // Append elements to page
-        document.getElementById("webcam-container").appendChild(webcam.canvas);
-        labelContainer = document.getElementById("label-container");
-        for (let i = 0; i < maxPredictions; i++) {
-            labelContainer.appendChild(document.createElement("div"));
-        }
-    } catch (error) {
-        console.error("Error loading the model or initializing webcam:", error);
-    }
+// Start camera (back camera if available)
+async function startCamera() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { exact: "environment" } }
+    });
+    video.srcObject = stream;
+  } catch (error) {
+    console.error("Back camera not found, switching to front camera:", error);
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    video.srcObject = stream;
+  }
 }
 
-async function loop() {
-    webcam.update();
-    window.requestAnimationFrame(loop);
+// Load model
+async function loadModel() {
+  try {
+    model = await tf.loadLayersModel('/model/model.json');
+    console.log("Model loaded successfully.");
+  } catch (error) {
+    console.error("Error loading model:", error);
+  }
 }
 
-// Capture image and predict
-async function captureAndPredict() {
-    try {
-        // Capture the current frame
-        const image = webcam.canvas.toDataURL("image/png");
-        document.getElementById("status").innerText = "Image Captured! Processing...";
+// Capture image
+captureBtn.addEventListener('click', async () => {
+  const ctx = canvas.getContext('2d');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-        // Run prediction
-        const prediction = await model.predict(webcam.canvas);
+  const dataUrl = canvas.toDataURL('image/png');
+  capturedImage.src = dataUrl;
+  capturedImage.style.display = 'block';
 
-        // Display predictions
-        let result = "Predictions:\n";
-        prediction.forEach(p => {
-            result += `${p.className}: ${(p.probability * 100).toFixed(2)}%\n`;
-        });
+  result.innerText = "Processing...";
 
-        document.getElementById("status").innerText = result;
-    } catch (error) {
-        console.error("Prediction error:", error);
-        document.getElementById("status").innerText = "Error during prediction!";
-    }
-}
+  // Preprocess image
+  const imgTensor = tf.browser.fromPixels(canvas)
+    .resizeNearestNeighbor([224, 224])
+    .toFloat()
+    .expandDims();
 
-window.onload = init;
+  // Predict
+  if (model) {
+    const prediction = await model.predict(imgTensor).data();
+    const predictedIndex = prediction.indexOf(Math.max(...prediction));
+    result.innerText = `Predicted Pokémon ID: ${predictedIndex}`;
+  } else {
+    result.innerText = "Model not loaded!";
+  }
+});
+
+// Initialize
+window.onload = async () => {
+  await startCamera();
+  await loadModel();
+};

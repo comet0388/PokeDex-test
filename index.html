@@ -1,41 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pokédex Test</title>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest"></script>
-  <style>
-    video {
-      width: 300px;
-      border: 2px solid #ccc;
-      border-radius: 10px;
-      margin: 10px 0;
-    }
-    #capturedImage {
-      width: 300px;
-      margin-top: 10px;
-      border: 2px solid #ccc;
-      border-radius: 10px;
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pokémon Predictor</title>
 </head>
 <body>
-  <h1>Pokédex Test</h1>
+  <h2>Pokémon Predictor</h2>
+  
+  <video id="camera" autoplay playsinline style="width: 300px;"></video>
+  <button id="captureBtn">Capture</button>
+  <br><br>
+  <canvas id="canvas" style="display:none;"></canvas>
+  <img id="capturedImage" style="width: 300px; display:none;" />
 
-  <!-- Camera preview -->
-  <video id="camera" autoplay playsinline></video><br>
+  <h3 id="result"></h3>
 
-  <!-- Capture button -->
-  <button id="capture">Capture</button>
-
-  <!-- Display captured image -->
-  <img id="capturedImage" alt="Captured Image"><br>
-
-  <!-- Display prediction -->
-  <div id="result" style="margin-top:20px; font-size:18px;">Prediction will appear here...</div>
-
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
   <script src="script.js"></script>
 </body>
 </html>
