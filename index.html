@@ -1,44 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pokédex Camera Test</title>
-    <style>
-        #webcam-container, #captured-container {
-            width: 200px;
-            height: 200px;
-            border: 2px solid black;
-            margin-bottom: 10px;
-        }
-        #result {
-            font-size: 18px;
-            margin-top: 10px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pokédex Camera Test</title>
+<style>
+    body { font-family: sans-serif; text-align: center; }
+    #webcam-container, #captured-container {
+        width: 200px;
+        height: 200px;
+        border: 2px solid black;
+        margin: 10px auto;
+        overflow: hidden;
+        position: relative;
+    }
+    #webcam-container video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover; /* keeps aspect ratio and fills box */
+    }
+    #captured-container canvas {
+        width: 100%;
+        height: 100%;
+    }
+    #capture-btn, #start-btn {
+        padding: 10px 20px;
+        margin: 10px;
+        font-size: 16px;
+    }
+    #result {
+        font-size: 18px;
+        margin-top: 10px;
+    }
+</style>
 </head>
 <body>
-    <h2>Pokédex Camera Test</h2>
+<h2>Pokédex Camera Test</h2>
 
-    <!-- Start camera -->
-    <button id="start-btn">Start Camera</button>
+<button id="start-btn">Start Camera</button>
 
-    <!-- Webcam preview -->
-    <div id="webcam-container"></div>
+<div id="webcam-container"></div>
 
-    <!-- Capture button -->
-    <button id="capture-btn" disabled>Capture Image</button>
+<button id="capture-btn" disabled>Capture Image</button>
 
-    <!-- Captured image -->
-    <div id="captured-container"></div>
+<div id="captured-container"></div>
 
-    <!-- Prediction -->
-    <div id="result">Prediction will appear here</div>
+<div id="result">Prediction will appear here</div>
 
-    <!-- TensorFlow.js and Teachable Machine -->
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
-
-    <script src="script.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
