@@ -1,56 +1,61 @@
-let model, webcamStream, capturedImage;
+let model, webcam, labelContainer, maxPredictions;
 
+// Initialize the model
 async function init() {
-  const video = document.getElementById("camera");
-  try {
-    // Access back camera
-    webcamStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { exact: "environment" } },
-      audio: false
-    });
-    video.srcObject = webcamStream;
-  } catch (error) {
-    console.error("Camera access error:", error);
-    document.getElementById("result").innerText = "Camera access denied or unavailable.";
-  }
+    const modelURL = "/my_model/model.json";
+    const metadataURL = "/my_model/metadata.json";
 
-  // Load the model
-  try {
-    model = await tmImage.load("my_model/model.json", "my_model/metadata.json");
-    console.log("Model loaded successfully!");
-  } catch (error) {
-    console.error("Error loading model:", error);
-    document.getElementById("result").innerText = "Failed to load model. Check path.";
-  }
+    try {
+        // Load the model and metadata
+        model = await tmImage.load(modelURL, metadataURL);
+        maxPredictions = model.getTotalClasses();
+
+        console.log("Model loaded successfully!");
+
+        // Set up webcam
+        const flip = true; // flip the camera if needed
+        webcam = new tmImage.Webcam(300, 300, flip);
+        await webcam.setup({ facingMode: "environment" }); // use back camera
+        await webcam.play();
+        window.requestAnimationFrame(loop);
+
+        // Append elements to page
+        document.getElementById("webcam-container").appendChild(webcam.canvas);
+        labelContainer = document.getElementById("label-container");
+        for (let i = 0; i < maxPredictions; i++) {
+            labelContainer.appendChild(document.createElement("div"));
+        }
+    } catch (error) {
+        console.error("Error loading the model or initializing webcam:", error);
+    }
 }
 
-document.getElementById("capture").addEventListener("click", async () => {
-  if (!model) {
-    document.getElementById("result").innerText = "Model not loaded yet!";
-    return;
-  }
+async function loop() {
+    webcam.update();
+    window.requestAnimationFrame(loop);
+}
 
-  const video = document.getElementById("camera");
-  const canvas = document.createElement("canvas");
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-  const ctx = canvas.getContext("2d");
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+// Capture image and predict
+async function captureAndPredict() {
+    try {
+        // Capture the current frame
+        const image = webcam.canvas.toDataURL("image/png");
+        document.getElementById("status").innerText = "Image Captured! Processing...";
 
-  capturedImage = new Image();
-  capturedImage.src = canvas.toDataURL("image/png");
+        // Run prediction
+        const prediction = await model.predict(webcam.canvas);
 
-  document.getElementById("result").innerText = "Image captured! Processing...";
+        // Display predictions
+        let result = "Predictions:\n";
+        prediction.forEach(p => {
+            result += `${p.className}: ${(p.probability * 100).toFixed(2)}%\n`;
+        });
 
-  // Predict
-  capturedImage.onload = async () => {
-    const prediction = await model.predict(capturedImage);
-    let highest = prediction[0];
-    for (let p of prediction) {
-      if (p.probability > highest.probability) highest = p;
+        document.getElementById("status").innerText = result;
+    } catch (error) {
+        console.error("Prediction error:", error);
+        document.getElementById("status").innerText = "Error during prediction!";
     }
-    document.getElementById("result").innerText = `Prediction: ${highest.className} (${(highest.probability * 100).toFixed(2)}%)`;
-  };
-});
+}
 
-init();
+window.onload = init;
