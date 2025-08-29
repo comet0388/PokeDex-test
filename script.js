@@ -1,62 +1,60 @@
-// Path to your model folder
-const URL = "./my_model/";
+const URL = "./model/"; // your model folder
 
-let model, webcam, labelContainer, maxPredictions;
+let model, maxPredictions;
+let webcam;
+let capturedCanvas, capturedContext;
 
-// Initialize the webcam and load the model
+// Initialize model and webcam
 async function init() {
     const modelURL = URL + "model.json";
     const metadataURL = URL + "metadata.json";
-    
-    navigator.mediaDevices.getUserMedia({ video: true })
-  .then(stream => {
-    video.srcObject = stream;
-  })
-  .catch(err => {
-    console.error("Camera access denied:", err);
-  });
 
     try {
-        // Load the model and metadata
         model = await tmImage.load(modelURL, metadataURL);
         maxPredictions = model.getTotalClasses();
 
-        // Set up the webcam
-        const flip = true; // flip the webcam for mirror effect
-        webcam = new tmImage.Webcam(200, 200, flip);
-        await webcam.setup(); // request camera permission
+        // Setup webcam (back camera preferred)
+        webcam = new tmImage.Webcam(200, 200, true); // width, height, flip
+        await webcam.setup({ facingMode: "environment" }); // request back camera
         await webcam.play();
-        window.requestAnimationFrame(loop);
 
-        // Add webcam canvas to DOM
+        // Append webcam canvas
         document.getElementById("webcam-container").appendChild(webcam.canvas);
 
-        // Add prediction labels to DOM
-        labelContainer = document.getElementById("label-container");
-        for (let i = 0; i < maxPredictions; i++) {
-            labelContainer.appendChild(document.createElement("div"));
-        }
+        // Setup captured image canvas
+        capturedCanvas = document.createElement("canvas");
+        capturedCanvas.width = 200;
+        capturedCanvas.height = 200;
+        capturedContext = capturedCanvas.getContext("2d");
+        document.getElementById("captured-container").appendChild(capturedCanvas);
+
+        // Enable capture button
+        document.getElementById("capture-btn").addEventListener("click", captureAndPredict);
+
     } catch (err) {
-        console.error("Error initializing model or webcam:", err);
-        alert("Could not load model or access webcam. Check console for details.");
+        console.error("Error initializing camera or model:", err);
+        alert("Could not access camera or load model. Check console.");
     }
 }
 
-// Loop for real-time predictions
-async function loop() {
-    webcam.update(); // update the webcam frame
-    await predict();
-    window.requestAnimationFrame(loop);
-}
+// Capture current webcam frame and run prediction
+async function captureAndPredict() {
+    // Draw current frame to captured canvas
+    capturedContext.drawImage(webcam.canvas, 0, 0, 200, 200);
 
-// Run the webcam image through the model
-async function predict() {
-    if (!model || !webcam) return;
+    // Predict using captured image
+    const prediction = await model.predict(capturedCanvas);
 
-    const prediction = await model.predict(webcam.canvas);
-    for (let i = 0; i < maxPredictions; i++) {
-        const classPrediction =
-            `${prediction[i].className}: ${prediction[i].probability.toFixed(2)}`;
-        labelContainer.childNodes[i].innerHTML = classPrediction;
+    // Find top prediction
+    let topClass = prediction[0];
+    for (let i = 1; i < prediction.length; i++) {
+        if (prediction[i].probability > topClass.probability) topClass = prediction[i];
     }
+
+    // Show result
+    document.getElementById("result").innerText =
+        `Prediction: ${topClass.className} (${(topClass.probability * 100).toFixed(2)}%)`;
 }
+
+// Initialize when page loads
+window.onload = init;

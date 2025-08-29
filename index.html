@@ -3,23 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teachable Machine - Image Model</title>
+    <title>Pokédex Camera Test</title>
+    <style>
+        #webcam-container, #captured-container {
+            width: 200px;
+            height: 200px;
+            border: 2px solid black;
+            margin-bottom: 10px;
+        }
+        #result {
+            font-size: 18px;
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
-    <h2>Teachable Machine Image Model</h2>
+    <h2>Pokédex Camera Test</h2>
 
-    <!-- Button to start the model -->
-    <button type="button" onclick="init()">Start Camera</button>
-    
-    <!-- Webcam feed and labels -->
+    <!-- Live webcam feed -->
     <div id="webcam-container"></div>
-    <div id="label-container"></div>
 
-    <!-- TensorFlow and Teachable Machine Scripts -->
+    <!-- Button to capture -->
+    <button id="capture-btn">Capture Image</button>
+
+    <!-- Captured image -->
+    <div id="captured-container"></div>
+
+    <!-- Prediction result -->
+    <div id="result">Prediction will appear here</div>
+
+    <!-- TensorFlow.js and Teachable Machine libraries -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
 
-    <!-- Your script -->
     <script src="script.js"></script>
 </body>
 </html>
