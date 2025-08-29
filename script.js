@@ -1,57 +1,71 @@
-// Teachable Machine Model URL (replace with your model link)
-const MODEL_URL = "./model/"; // should contain model.json and metadata.json
-
 let model, webcamStream;
+const URL = "./model/"; // Path to your Teachable Machine model folder
 
-window.addEventListener('DOMContentLoaded', init);
+const video = document.getElementById("camera");
+const capturedImg = document.getElementById("captured");
+const captureButton = document.getElementById("capture");
+const retakeButton = document.getElementById("retake");
+const resultDiv = document.getElementById("result");
+
+const canvas = document.createElement("canvas");
+const ctx = canvas.getContext("2d");
 
 async function init() {
-  const video = document.getElementById('camera');
-  const captureBtn = document.getElementById('capture');
-  const resultDiv = document.getElementById('result');
-
   try {
-    // Start webcam
+    // Load model
+    model = await tmImage.load(URL + "model.json", URL + "metadata.json");
+
+    // Request back camera
+    webcamStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { exact: "environment" } },
+      audio: false
+    });
+
+    video.srcObject = webcamStream;
+  } catch (error) {
+    console.warn("Back camera not available, switching to default:", error);
+
+    // Fallback to default camera
     webcamStream = await navigator.mediaDevices.getUserMedia({ video: true });
     video.srcObject = webcamStream;
-    video.play();
-    console.log("Camera started.");
-  } catch (err) {
-    console.error("Camera access denied:", err);
-    alert("Camera access is required for predictions!");
+  }
+}
+
+captureButton.addEventListener("click", async () => {
+  if (!model) {
+    resultDiv.innerText = "Model is still loading. Please wait...";
     return;
   }
 
-  try {
-    // Load the model
-    model = await tmImage.load(`${MODEL_URL}model.json`, `${MODEL_URL}metadata.json`);
-    console.log("Model loaded successfully.");
-  } catch (err) {
-    console.error("Failed to load model:", err);
-    alert("Could not load model. Check path and files.");
-    return;
-  }
+  // Capture current frame
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-  // Capture button logic
-  captureBtn.addEventListener('click', async () => {
-    const prediction = await predict(video);
-    resultDiv.innerText = prediction;
-  });
-}
+  // Show captured image
+  capturedImg.src = canvas.toDataURL("image/png");
+  capturedImg.style.display = "block";
+  video.style.display = "none";
+  captureButton.style.display = "none";
+  retakeButton.style.display = "inline-block";
 
-// Prediction function
-async function predict(videoElement) {
-  if (!model) return "Model not loaded.";
+  // Predict
+  const prediction = await model.predict(canvas);
+  const topPrediction = prediction.reduce((max, current) =>
+    current.probability > max.probability ? current : max
+  );
 
-  const predictions = await model.predict(videoElement);
-  let bestPrediction = predictions[0];
+  resultDiv.innerText = `Predicted Pokémon: ${topPrediction.className} (${(topPrediction.probability * 100).toFixed(2)}%)`;
+});
 
-  // Find highest probability class
-  for (let p of predictions) {
-    if (p.probability > bestPrediction.probability) {
-      bestPrediction = p;
-    }
-  }
+retakeButton.addEventListener("click", () => {
+  // Switch back to live camera view
+  capturedImg.style.display = "none";
+  video.style.display = "block";
+  captureButton.style.display = "inline-block";
+  retakeButton.style.display = "none";
+  resultDiv.innerText = "";
+});
 
-  return `Prediction: ${bestPrediction.className} (${(bestPrediction.probability * 100).toFixed(2)}%)`;
-}
+// Initialize camera and model
+init();
