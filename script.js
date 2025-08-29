@@ -1,47 +1,51 @@
-let model;
-let video = document.getElementById("camera");
-let captureBtn = document.getElementById("capture");
-let resultDiv = document.getElementById("result");
-let snapshotImg = document.getElementById("snapshot");
+const video = document.getElementById('camera');
+const captureButton = document.getElementById('capture');
+const resultDiv = document.getElementById('result');
+const capturedImage = document.getElementById('capturedImage');
 
-const URL = "./model/"; // Path to your model folder
+// Debug permission state
+if (navigator.permissions) {
+  navigator.permissions.query({ name: 'camera' })
+    .then(result => {
+      console.log('Camera permission state:', result.state);
+      resultDiv.innerText = `Permission state: ${result.state}`;
+    })
+    .catch(err => console.error('Permission API error:', err));
+} else {
+  console.log('Permissions API not supported');
+}
 
-async function init() {
+// Initialize camera
+async function initCamera() {
   try {
-    model = await tmImage.load(`${URL}model.json`, `${URL}metadata.json`);
-    console.log("Model loaded!");
-
-    // Force back camera
     const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { exact: "environment" } },
+      video: { facingMode: { ideal: 'environment' } }, // Rear camera preferred
       audio: false
     });
-
     video.srcObject = stream;
-  } catch (error) {
-    console.error("Camera access failed:", error);
-    resultDiv.innerText = "Camera access failed. Check permissions or try another browser.";
+    console.log('Camera started successfully');
+    resultDiv.innerText = "Camera started. Ready to capture!";
+  } catch (err) {
+    console.error('Camera access error:', err);
+    resultDiv.innerText = "Camera access failed. Check permissions in settings.";
   }
 }
 
-captureBtn.addEventListener("click", async () => {
-  try {
-    let canvas = document.createElement("canvas");
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext("2d").drawImage(video, 0, 0);
+initCamera();
 
-    snapshotImg.src = canvas.toDataURL("image/png");
-    snapshotImg.style.display = "block";
-
-    const prediction = await model.predict(canvas);
-    let topPrediction = prediction.reduce((max, item) => item.probability > max.probability ? item : max);
-
-    resultDiv.innerText = `Prediction: ${topPrediction.className} (${(topPrediction.probability * 100).toFixed(2)}%)`;
-  } catch (error) {
-    console.error(error);
-    resultDiv.innerText = "Prediction failed.";
+// Capture frame
+captureButton.addEventListener('click', () => {
+  if (!video.srcObject) {
+    resultDiv.innerText = "Camera not active. Check permissions.";
+    return;
   }
-});
 
-init();
+  const canvas = document.createElement('canvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  capturedImage.src = canvas.toDataURL('image/png');
+  capturedImage.style.display = 'block';
+  resultDiv.innerText = "Image captured! Ready for processing...";
+});

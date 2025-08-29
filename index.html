@@ -1,27 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pokédex Test</title>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Camera Capture</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 30px;
+    }
+    video {
+      width: 300px;
+      height: auto;
+      border: 2px solid #000;
+      border-radius: 8px;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #capturedImage {
+      display: none;
+      width: 300px;
+      margin-top: 10px;
+      border: 2px solid #000;
+      border-radius: 8px;
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+  </style>
 </head>
 <body>
-  <h1>Pokédex Test</h1>
-
-  <!-- Small live video preview -->
-  <video id="camera" autoplay playsinline style="width: 250px; border: 2px solid #333;"></video><br>
-
-  <!-- Capture button -->
-  <button id="capture">Capture</button><br><br>
-
-  <!-- Snapshot preview -->
-  <img id="snapshot" style="width: 250px; margin-top: 10px; display:none; border: 2px solid #666;"/>
-
-  <!-- Display prediction -->
-  <div id="result" style="margin-top:20px; font-size:18px;">Prediction will appear here...</div>
-
+  <h1>Camera Capture Test</h1>
+  <video id="camera" autoplay playsinline></video>
+  <br>
+  <button id="capture">Capture</button>
+  <br>
+  <img id="capturedImage">
+  <div id="result">Prediction will appear here...</div>
   <script src="script.js"></script>
 </body>
 </html>
