@@ -7,6 +7,14 @@ let model, webcam, labelContainer, maxPredictions;
 async function init() {
     const modelURL = URL + "model.json";
     const metadataURL = URL + "metadata.json";
+    
+    navigator.mediaDevices.getUserMedia({ video: true })
+  .then(stream => {
+    video.srcObject = stream;
+  })
+  .catch(err => {
+    console.error("Camera access denied:", err);
+  });
 
     try {
         // Load the model and metadata
